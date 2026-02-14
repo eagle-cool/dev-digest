@@ -5,8 +5,6 @@ description: "Cloudflare 開源五年實戰的 Rust 零停機重啟函式庫 ecd
 tags: [systems, opensource, frontend]
 ---
 
-# Cloudflare 開源 Rust 零停機重啟、開源永恆九月危機、Interop 2026 啟動
-
 今天最大的亮點是 Cloudflare 把內部用了五年的 Rust 零停機重啟神器開源了，同時 GitHub 終於正式回應 AI 生成的低品質貢獻正在壓垮開源維護者的問題。Web 開發者這邊也有好消息——Interop 2026 宣布了 20 項跨瀏覽器互通性的重點改進項目，CSS 和 Web API 的一致性將在今年大幅提升。
 
 ---
