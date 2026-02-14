@@ -1,7 +1,12 @@
 ---
 ---
 
-@use 'main';
+/* prettier-ignore */
+@use 'main
+{%- if jekyll.environment == 'production' -%}
+  .bundle
+{%- endif -%}
+';
 
 /* Override fonts with Noto Sans TC for Chinese support */
 body {
