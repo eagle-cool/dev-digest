@@ -1,0 +1,28 @@
+{
+  "permissions": {
+    "allow": [
+      "Edit",
+      "Write",
+
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:news.ycombinator.com)",
+      "WebFetch(domain:huggingface.co)",
+      "WebFetch(domain:www.anthropic.com)",
+      "WebFetch(domain:www.oneusefulthing.org)",
+      "WebFetch(domain:simonwillison.net)",
+      "WebFetch(domain:vercel.com)",
+      "WebFetch(domain:nextjs.org)",
+      "WebFetch(domain:web.dev)",
+      "WebFetch(domain:css-tricks.com)",
+      "WebFetch(domain:react.dev)",
+      "WebFetch(domain:www.smashingmagazine.com)",
+      "WebFetch(domain:kentcdodds.com)",
+      "WebFetch(domain:javascriptweekly.com)",
+      "WebFetch(domain:dev.to)",
+      "WebFetch(domain:old.reddit.com)",
+
+      "Bash(*)"
+    ]
+  }
+}

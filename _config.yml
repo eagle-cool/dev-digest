@@ -10,10 +10,10 @@ lang: zh-TW
 timezone: Asia/Taipei
 
 # jekyll-seo-tag settings
-title: Dev Digest
-tagline: 每日精選開發者新聞 — 前端、系統、資安與開源趨勢
+title: 打碼老濕
+tagline: 幫你過濾噪音的技術日報 — 前端、系統、資安、DevOps、開源
 description: >-
-  每日精選開發者新聞摘要，涵蓋前端開發、系統工程、資安與開源趨勢。
+  資深全端老司機的每日技術精選。濾掉廢話，留下真正有料的東西。不站隊、不傳教、不賣課。
 
 url: "https://eagle-cool.github.io"
 baseurl: "/dev-digest"
@@ -22,7 +22,7 @@ github:
   username: eagle-cool
 
 social:
-  name: Dev Digest
+  name: 打碼老濕
   links:
     - https://github.com/eagle-cool
 
