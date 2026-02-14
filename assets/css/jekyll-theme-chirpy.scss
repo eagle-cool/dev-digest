@@ -1,0 +1,15 @@
+---
+---
+
+@use 'main';
+
+/* Override fonts with Noto Sans TC for Chinese support */
+body {
+  font-family: 'Noto Sans TC', 'Source Sans Pro', sans-serif;
+}
+
+h1, h2, h3, h4, h5, h6,
+.site-title, .site-subtitle,
+.post-title, .card-title {
+  font-family: 'Noto Sans TC', Lato, sans-serif;
+}
