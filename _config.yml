@@ -43,7 +43,7 @@ theme_mode:
 cdn:
 
 # the avatar on sidebar
-avatar: /assets/img/favicons/favicon.svg
+avatar: /assets/img/avatar.jpeg
 
 # The URL of the site-wide social preview image
 social_preview_image: /assets/img/og-image.png

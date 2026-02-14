@@ -3,9 +3,14 @@
   "short_name": "Dev Digest",
   "icons": [
     {
-      "src": "/dev-digest/assets/img/favicons/favicon.svg",
-      "type": "image/svg+xml",
-      "sizes": "any"
+      "src": "/dev-digest/assets/img/favicons/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/dev-digest/assets/img/favicons/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
     }
   ],
   "theme_color": "#10b981",
