@@ -1,19 +1,18 @@
 ---
 name: deep-dive
-description: 從 RSS 來源中挑選一篇最值得深度解析的前端文章，結合延伸研究撰寫 3000-5000 字的深度專題報導。發布至 GitHub Pages 並通知 Discord。
-argument-hint: "[optional: entry_id or URL]"
+description: 按預定主題清單，撰寫前端框架核心解析的深度專題報導（3000-5000 字）。發布至 GitHub Pages 並通知 Discord。
+argument-hint: "[topic keyword or 'next' for auto-select]"
 disable-model-invocation: false
 user-invocable: true
 allowed-tools: Task, WebFetch, WebSearch, Read, Write, Bash(date*), Bash(ls*), Bash(node *), Bash(test *), Bash(docker *), Bash(git *)
 ---
 
-# Deep Dive — RSS-Driven Frontend Deep Analysis → GitHub Pages
+# Deep Dive — 主題式前端框架核心解析 → GitHub Pages
 
-> **Source**: Miniflux RSS aggregator (Dev category, ~74 feeds)
-> **Strategy**: RSS 選題 → Agent 挑出一篇最值得深入的前端文章 → WebSearch/WebFetch 延伸研究 → 3000-5000 字深度專題
+> **Strategy**: 預定主題清單 → Agent 研究該主題 → WebSearch/WebFetch 深度調研 → 3000-5000 字核心解析
 > **Publish**: GitHub Pages (Jekyll) + Discord notification
 > **Language**: Traditional Chinese (繁體中文) — 術語保留英文
-> **Trigger**: 手動觸發，不定期
+> **Trigger**: 手動觸發，可指定主題或自動選下一個
 
 ## Core Architecture
 
@@ -23,35 +22,97 @@ allowed-tools: Task, WebFetch, WebSearch, Read, Write, Bash(date*), Bash(ls*), B
 ├──────────────────────────────────────────────────────────────────┤
 │                                                                   │
 │   ┌──────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐  │
-│   │ Phase 1  │ →  │ Phase 2  │ →  │ Phase 3  │ →  │ Phase 4  │  │
-│   │ Fetch    │    │ Select   │    │ Deep     │    │ Research │  │
-│   │ RSS Data │    │ THE ONE  │    │ Read     │    │ & Expand │  │
+│   │ Phase 0  │ →  │ Phase 1  │ →  │ Phase 2  │ →  │ Phase 3  │  │
+│   │ Load     │    │ Select   │    │ Deep     │    │ Write    │  │
+│   │ SOUL     │    │ Topic    │    │ Research │    │ Article  │  │
 │   └──────────┘    └──────────┘    └──────────┘    └──────────┘  │
 │       │                │                │                │       │
 │       ▼                ▼                ▼                ▼       │
-│   Miniflux API    Agent picks 1    Full article     WebSearch +  │
-│   → Dev category   best frontend   content via      WebFetch     │
-│     (1 API call)   article         Miniflux/Web     延伸研究      │
+│   SOUL.md 人設    從主題清單挑選    WebSearch +       3000-5000 字 │
+│                   或接收指定主題    WebFetch 深度     核心解析專題   │
+│                                    研究 (5+ 次)                   │
 │                                                                   │
-│   ┌──────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐  │
-│   │ Phase 5  │ →  │ Phase 6  │ →  │ Phase 7  │ →  │ Phase 8  │  │
-│   │ Write    │    │ Mark     │    │ Publish  │    │ Discord  │  │
-│   │ Article  │    │ Read     │    │ Pages    │    │ Notify   │  │
-│   └──────────┘    └──────────┘    └──────────┘    └──────────┘  │
-│       │                │                │                │       │
-│       ▼                ▼                ▼                ▼       │
-│   3000-5000 字     Miniflux API    git push →      Send URL +   │
-│   深度專題          mark as read    GitHub Pages    summary       │
+│   ┌──────────┐    ┌──────────┐                                   │
+│   │ Phase 4  │ →  │ Phase 5  │                                   │
+│   │ Publish  │    │ Discord  │                                   │
+│   │ Pages    │    │ Notify   │                                   │
+│   └──────────┘    └──────────┘                                   │
+│       │                │                                          │
+│       ▼                ▼                                          │
+│   git push →       Send URL +                                    │
+│   GitHub Pages     summary                                       │
 │                                                                   │
 └──────────────────────────────────────────────────────────────────┘
-         ↕ REST API (via client.mjs)
-┌────────────────────┐
-│   Miniflux         │  ← Dev category feeds (~74 sources)
-│   (always running) │  ← Handles caching, dedup, parsing
-└────────────────────┘
 ```
 
-## Phase 0: Load SOUL
+## Topic Registry — 主題清單
+
+以下是預定的深度解析主題。每個主題都是「不追新、但值得深挖」的框架核心知識。
+
+### React 核心系列
+
+| # | Topic | Slug Prefix | 核心問題 |
+|---|-------|-------------|----------|
+| R1 | Fiber 架構與 Reconciliation | react-fiber-reconciliation | React 為什麼要從 Stack 換成 Fiber？Reconciliation 到底怎麼運作？ |
+| R2 | Hooks 的底層鏈表機制 | react-hooks-internals | 為什麼 Hooks 有使用規則限制？底層的鏈表結構長什麼樣？ |
+| R3 | Concurrent Mode 排程器 | react-concurrent-scheduler | React 的 Lane 模型和時間切片怎麼做到不阻塞 UI？ |
+| R4 | Server Components 序列化協議 | react-server-components-protocol | RSC 的 wire format 長什麼樣？Client 和 Server 之間怎麼通訊？ |
+| R5 | React Compiler (React Forget) | react-compiler-auto-memoization | React Compiler 如何自動推斷 memoization？它的 IR 和靜態分析怎麼做的？ |
+| R6 | Virtual DOM 的 Diff 算法演進 | react-vdom-diff-evolution | 從 O(n³) 到 O(n) — React 的 diff 做了哪些取捨？和 Svelte 的 no-VDOM 比呢？ |
+| R7 | Suspense 與 Streaming SSR | react-suspense-streaming-ssr | Suspense 不只是 loading spinner — 它如何改變 SSR 架構？ |
+| R8 | useEffect 的完整生命週期 | react-useeffect-lifecycle | cleanup、dependency array、strict mode double-invoke — 你真的理解 useEffect 嗎？ |
+| R9 | Context 的效能陷阱與替代方案 | react-context-performance | 為什麼 Context 會導致不必要的 re-render？信號（Signals）是答案嗎？ |
+| R10 | React 錯誤邊界與恢復機制 | react-error-boundaries | Error Boundary 怎麼攔截錯誤？為什麼只能用 class component？ |
+
+### Next.js 核心系列
+
+| # | Topic | Slug Prefix | 核心問題 |
+|---|-------|-------------|----------|
+| N1 | App Router 路由解析機制 | nextjs-app-router-internals | 檔案系統路由怎麼編譯成路由表？Layout 嵌套的實現原理？ |
+| N2 | RSC 在 Next.js 的完整資料流 | nextjs-rsc-data-flow | 從 Server Component render 到 Client hydration，資料怎麼流動？ |
+| N3 | 靜態 vs 動態渲染的決策樹 | nextjs-static-dynamic-rendering | Next.js 怎麼決定哪些頁面靜態生成、哪些動態渲染？force-dynamic 的底層機制？ |
+| N4 | Middleware 與 Edge Runtime | nextjs-middleware-edge-runtime | Middleware 跑在哪裡？Edge Runtime 的限制是什麼？跟 Node.js Runtime 有何不同？ |
+| N5 | 快取策略全解 | nextjs-caching-strategy | Data Cache、Full Route Cache、Router Cache — Next.js 四層快取怎麼協作？ |
+| N6 | Server Actions 的實現原理 | nextjs-server-actions-internals | Server Actions 怎麼從 form 提交變成 RPC 調用？安全性怎麼保證？ |
+| N7 | Turbopack 架構與增量編譯 | nextjs-turbopack-architecture | 為什麼 Turbopack 比 webpack 快？增量編譯和持久化快取怎麼做的？ |
+
+### TypeScript 深度系列
+
+| # | Topic | Slug Prefix | 核心問題 |
+|---|-------|-------------|----------|
+| T1 | 型別系統的結構化子型別 | typescript-structural-typing | 鴨子型別 vs 名義型別 — TS 的選擇帶來什麼好處和陷阱？ |
+| T2 | 條件型別與 infer 的威力 | typescript-conditional-infer | 條件型別怎麼做到型別層級的模式匹配？實用案例拆解 |
+| T3 | Template Literal Types | typescript-template-literal-types | 字串型別也能做型別運算？從 API route 型別到 CSS-in-TS |
+| T4 | 協變與逆變 | typescript-variance | 為什麼函式參數是逆變的？React 元件 props 的型別安全怎麼保證？ |
+
+### CSS 與 Web 平台系列
+
+| # | Topic | Slug Prefix | 核心問題 |
+|---|-------|-------------|----------|
+| W1 | CSS Container Queries 完全攻略 | css-container-queries | 從 media query 到 container query — 響應式設計的典範轉移 |
+| W2 | View Transitions API | view-transitions-api | 瀏覽器原生頁面轉場 — 跨文件動畫終於不用 JavaScript 了？ |
+| W3 | CSS Cascade Layers (@layer) | css-cascade-layers | 如何用 @layer 解決 CSS 優先權地獄？對元件庫的影響？ |
+| W4 | Web Components 2026 現狀 | web-components-2026-status | Declarative Shadow DOM、CSS Parts — WC 終於成熟了嗎？ |
+
+### Node.js 與後端系列
+
+| # | Topic | Slug Prefix | 核心問題 |
+|---|-------|-------------|----------|
+| B1 | Node.js Event Loop 深度解析 | nodejs-event-loop-deep-dive | 微任務、宏任務、I/O polling — 事件循環的六個階段真正怎麼運作？ |
+| B2 | NestJS 依賴注入容器 | nestjs-dependency-injection | NestJS 的 DI 容器怎麼實現的？Reflect.metadata 和裝飾器的角色？ |
+| B3 | Node.js Streams 與背壓 | nodejs-streams-backpressure | 為什麼大檔案要用 Stream？背壓機制怎麼防止記憶體爆炸？ |
+
+### 前端工程化系列
+
+| # | Topic | Slug Prefix | 核心問題 |
+|---|-------|-------------|----------|
+| E1 | Vite 的 HMR 與模組圖 | vite-hmr-module-graph | Vite 的 HMR 為什麼比 webpack 快？模組圖怎麼做到精準更新？ |
+| E2 | Monorepo 工具鏈比較 | monorepo-toolchain-comparison | Turborepo vs Nx vs pnpm workspace — 各自的快取和任務排程策略 |
+| E3 | Tree Shaking 的真實原理 | tree-shaking-deep-analysis | ESM 的靜態分析怎麼做到死碼消除？side effects 為什麼是陷阱？ |
+
+## Execution Process
+
+### Phase 0: Load SOUL
 
 Before starting any phase, **read `SOUL.md`** from the project root to load the author persona.
 
@@ -63,201 +124,143 @@ Steps:
   4. The persona nickname must NEVER appear in published content
 ```
 
-## Execution Process
-
-### Phase 1: Fetch RSS Data
-
-Retrieve unread entries from Miniflux **Dev category only** (category_id = 4).
-
-If user provides an entry_id or URL as argument, skip Phase 1 & 2 — jump directly to Phase 3 with that article.
+### Phase 1: Select Topic — 選定主題
 
 ```yaml
-Steps:
-  0. Pre-flight: ensure Miniflux is running
-     docker ps --filter name=miniflux --format '{{.Names}}' | grep -q miniflux
-     - If NOT running: inform user to start Miniflux first, then verify with healthcheck:
-       node ~/.claude/skills/miniflux/client.mjs healthcheck
-  1. Determine target date (today via `date +%Y-%m-%d`)
-  2. Calculate "after" timestamp (5 days before target date for wider pool):
-     # Use: date -v-5d +%s (macOS) or date -d '5 days ago' +%s (Linux)
-  3. Fetch unread entries from Miniflux WITH category and time filter:
-     node ~/.claude/skills/miniflux/client.mjs entries --status unread --limit 200 --category 4 --after <unix_timestamp> --direction desc
-     → IMPORTANT: Always use --category 4 to filter Dev feeds only
-     → IMPORTANT: Always use --after to avoid pulling old imported articles
-     → Returns JSON: { total, count, entries: [{ id, title, url, feed, published, content_preview }] }
-  4. If total == 0, check if Miniflux is healthy:
-     node ~/.claude/skills/miniflux/client.mjs healthcheck
-     - If unhealthy: report error and stop
-     - If healthy but 0 entries: report "no unread dev content available"
-```
+Input: User argument (topic keyword, topic ID like "R1", or "next")
 
-### Phase 2: Select THE ONE — 前端優先選題
+Case A — User specifies a topic:
+  - Match against Topic Registry by keyword or ID (e.g., "R1", "fiber", "hooks")
+  - If no match: treat as a custom topic (user can request any frontend/React/Node topic)
+  - Confirm the topic and research angle
 
-Agent 從所有 unread entries 中挑出**一篇**最值得深度解析的文章。
-
-```yaml
-Input: Array of entries from Phase 1 (title, url, feed, content_preview)
-
-Selection Criteria — 什麼樣的文章值得 deep dive:
-
-  Priority Focus (前端為主):
-    - 新的 Web 標準 / 瀏覽器 API（如 View Transitions, Popover, CSS Anchor Positioning）
-    - 主流框架重大更新或架構變革（React Server Components, Svelte 5, Vue Vapor）
-    - 前端效能突破或新的最佳實踐
-    - 建置工具革新（Vite, Turbopack, Rspack, Bun bundler）
-    - TypeScript 重大特性或型別系統深度議題
-    - CSS 新功能或佈局技術突破
-    - Web Components / Web Platform 重要進展
-    - 前端安全漏洞或供應鏈攻擊
-
-  Also Considered (次要但仍可選):
-    - Systems 技術對前端的影響（WASM, Edge Runtime, Rust-based tooling）
-    - 重大開源專案的架構設計深度文章
-    - 影響廣泛的安全漏洞分析
-
-  NOT Suitable for Deep Dive:
-    - AI/ML 內容
-    - 簡單的 tutorial 或 how-to（太淺）
-    - 新聞公告類（沒有技術深度可挖）
-    - 已經被寫爛的老話題
-    - Marketing / PR 文
-
-  Ideal Article Characteristics:
-    - 有技術深度可挖 — 不只是「XXX 發布了」而是「XXX 的架構設計有什麼巧思」
-    - 有爭議性或多面向 — 值得從不同角度討論
-    - 有延伸空間 — 可以連結到更大的技術趨勢或歷史脈絡
-    - 讀者讀完會有「原來如此」的收穫
-    - 能寫出 3000-5000 字的有料分析，不是硬湊
+Case B — User says "next" or provides no argument:
+  1. List existing deep-dive posts:
+     ls _posts/*deep-dive* or grep for 'deep-dive' tag in _posts/
+  2. Cross-reference with Topic Registry to find which topics are already covered
+  3. Pick the next uncovered topic in order (R1 → R2 → ... → N1 → N2 → ...)
+  4. Announce the selected topic before proceeding
 
 Output:
-  - selected_entry: { id, title, url, feed, content_preview }
-  - selection_reason: 2-3 句說明為什麼選這篇（內部用，不發布）
+  - selected_topic: { id, title, slug_prefix, core_question }
   - angle: 預計切入的角度和大綱方向（內部用）
 ```
 
-### Phase 3: Deep Read — 完整閱讀選定文章
+### Phase 2: Deep Research — 深度調研
 
-```yaml
-Strategy:
-  - 完整讀取選定文章的全文，不是摘要
-
-Method 1 — Miniflux fetch-content (preferred, zero-cost):
-  node ~/.claude/skills/miniflux/client.mjs fetch-content <entry_id>
-  → Returns original article HTML content fetched by Miniflux
-
-Method 2 — WebFetch fallback (if Miniflux fetch-content returns empty):
-  Use WebFetch to read the article URL directly
-  → Agent extracts key information from the page
-
-After reading, produce internal notes:
-  - core_thesis: 文章的核心論點是什麼
-  - technical_details: 關鍵技術細節列表
-  - questions: 讀完後有哪些問題需要延伸研究
-  - connections: 這個話題和哪些更大的趨勢/歷史有關
-  - research_queries: 需要搜尋的 3-5 個具體問題
-```
-
-### Phase 4: Research & Expand — 延伸研究
-
-這是 deep-dive 與 generate-post 最大的差異：**Agent 必須主動做延伸研究**，不能只靠原文和通用知識。
+這是主題式 deep-dive 的核心：**Agent 必須透過大量研究來構建內容**，不是從一篇文章延伸，而是從零開始研究一個技術主題。
 
 ```yaml
 Research Strategy:
-  1. 根據 Phase 3 的 research_queries，用 WebSearch 搜尋相關資料
-  2. 從搜尋結果中用 WebFetch 抓取 3-5 篇最相關的參考文章
-  3. 研究方向包括但不限於：
-     - 官方文件 / RFC / 提案原文
-     - GitHub issue / PR 討論中的第一手資訊
-     - 其他工程師對同一話題的分析或反駁
-     - 相關技術的歷史演進和前車之鑑
-     - 效能數據、benchmarks、實測結果
-     - 競爭方案或替代方案的比較
+  1. 先搜尋該主題的官方文件和原始資料
+     - React: react.dev 文件、GitHub RFC、原始 PR
+     - Next.js: nextjs.org 文件、Vercel 工程 blog
+     - TypeScript: typescriptlang.org handbook、GitHub issues
+     - Node.js: nodejs.org 文件、libuv 原始碼相關文章
+  2. 搜尋社群中該主題的優質深度文章
+     - 知名工程師的 blog post
+     - Conference talk 文字稿或摘要
+     - GitHub 上的 discussion 和 issue
+  3. 搜尋反面觀點和常見誤解
+     - "X is considered harmful" 類型的文章
+     - Stack Overflow 上的常見錯誤
+     - 效能陷阱或反模式
 
 Research Rules:
-  - MUST: 至少用 WebSearch 搜尋 3 次不同的查詢
-  - MUST: 至少用 WebFetch 閱讀 2 篇延伸參考文章
-  - MUST: 研究結果必須實質性地影響最終文章內容，不是裝飾
-  - MUST NOT: 編造不存在的數據、引用、或 benchmark 結果
+  - MUST: 至少用 WebSearch 搜尋 5 次不同的查詢角度
+  - MUST: 至少用 WebFetch 閱讀 3 篇深度參考文章
+  - MUST: 研究結果必須實質性地構成最終文章內容
+  - MUST: 包含原始碼級別的分析（看框架原始碼怎麼實現的）
+  - MUST NOT: 編造不存在的數據、API、或原始碼
   - MUST NOT: 只搜尋確認自己觀點的資料（要找正反兩面）
-  - SHOULD: 優先找一手資料（RFC, PR, 官方 blog）而非二手轉述
+  - SHOULD: 優先找一手資料（RFC, PR, 官方 blog, 原始碼）而非二手轉述
+  - SHOULD: 找到具體的程式碼範例來說明概念
 
 Output:
   - references: [{ title, url, key_insight }] — 實際引用的參考資料
-  - additional_context: 延伸研究中發現的重要資訊
-  - counter_arguments: 不同觀點或反對意見
+  - source_code_findings: 從框架原始碼中發現的關鍵實現細節
+  - common_misconceptions: 該主題常見的誤解
+  - code_examples: 用來說明概念的程式碼片段
 ```
 
-### Phase 5: Write Article — 撰寫深度專題
+### Phase 3: Write Article — 撰寫核心解析專題
 
 ```yaml
 Article Requirements:
   Length: 3000-5000 字（繁體中文）
-  Tone: 遵循 SOUL.md 人設 — 資深工程師的深度解讀
-  Structure: 視主題而定（見下方結構選項）
+  Tone: 遵循 SOUL.md 人設 — 資深工程師帶你看框架原始碼
+  Nature: 不追新，深挖基礎。目標是讓讀者讀完後對框架的「為什麼」有深刻理解。
 
-Structure Options (Agent 根據主題自行選擇最適合的):
+Structure (核心解析文章的通用結構):
 
-  Option A — 故事線型:
-    原文新聞出發 → 背景脈絡 → 技術深潛 → 實際影響 → 結論與展望
-    適合：重大發布、架構變革、新標準
+  開場 (2-3 段):
+    - 從一個常見的實際問題或誤解切入
+    - 例：「你有沒有想過，為什麼 React 規定 Hooks 不能放在 if 裡面？」
+    - 讓讀者知道今天要解開什麼謎團、為什麼他該在乎
 
-  Option B — 問題拆解型:
-    提出問題 → 現狀分析 → 方案比較 → 深入某方案 → 結論
-    適合：「該用 A 還是 B」、「為什麼 X 取代了 Y」
+  背景/脈絡 (1 個 H2):
+    - 這個機制存在的歷史原因
+    - 它解決了什麼問題
+    - 在它之前是怎麼做的
 
-  Option C — 技術解析 + 實作導向:
-    這是什麼 → 為什麼需要 → 怎麼運作（附程式碼） → 實際應用 → 注意事項
-    適合：新 API、新工具、新框架特性
+  核心機制解析 (1-2 個 H2):
+    - 深入原始碼級別的實現分析
+    - 配合程式碼片段和圖表（用 ASCII 或 markdown）
+    - 解釋關鍵的資料結構和演算法
+    - 用簡化的虛擬碼讓讀者能理解核心邏輯
 
-  Option D — 趨勢分析型:
-    現象觀察 → 歷史脈絡 → 各方觀點 → 技術分析 → 未來預測
-    適合：「為什麼大家都在轉向 XXX」、生態系變化
+  實際影響/應用 (1 個 H2):
+    - 理解這個機制後，能怎麼寫出更好的程式碼
+    - 常見的陷阱和反模式
+    - 效能考量
+
+  結論 (1 段):
+    - 有立場的總結
+    - 對讀者的具體建議
+    - 不要「讓我們拭目以待」那種廢話結尾
+
+  延伸閱讀:
+    - 文末附上參考資料
 
 SEO Title (繁體中文):
   - 直接、有料、不標題黨
   - 包含核心技術名詞
   - 20-50 字
-  - 例：「React Server Components 深度解析：為什麼你的 SPA 該開始準備了」
-  - 例：「View Transitions API 完全攻略：瀏覽器原生動畫終於能用了」
-  - 例：「Bun 2.0 vs Vite vs Turbopack：2026 前端建置工具終極比較」
+  - 例：「React Fiber 架構深度解析：從 Stack 到鏈表的 Reconciliation 革命」
+  - 例：「你真的懂 useEffect 嗎？React Effect 的完整生命週期拆解」
+  - 例：「Next.js 的四層快取機制：從 Request 到 Full Route 完全攻略」
 
 Slug Generation:
-  - Based on the main topic, lowercase English, hyphen-separated
-  - Max 8 words, descriptive
-  - Examples:
-    - "react-server-components-deep-analysis"
-    - "view-transitions-api-complete-guide"
-    - "bun-vite-turbopack-comparison-2026"
+  - Use the slug_prefix from Topic Registry, optionally extended
+  - Lowercase English, hyphen-separated, max 8 words
+  - Examples: "react-fiber-reconciliation-deep-dive"
 
 Tags:
   - MUST include: deep-dive (用來區分日報)
-  - Plus relevant tech tags from: frontend, systems, security, devops, opensource, programming, retro
+  - Plus relevant tech tags from: react, nextjs, typescript, css, nodejs, frontend, web-platform, tooling
 
 Jekyll Front Matter:
   ---
   title: "<SEO Title>"
   date: YYYY-MM-DD
   description: "<80-120 字繁中摘要，適合 Google 搜尋結果片段，要有具體技術內容>"
-  tags: [deep-dive, frontend, ...]
+  tags: [deep-dive, react, ...]
   ---
 
 Content Rules:
   - NO H1 title — Jekyll front matter `title` already renders as the page heading
-  - 開場 (2-3 段): 從原文新聞/事件切入，迅速讓讀者知道「今天要聊什麼、為什麼重要」
-  - 主體: 根據選定的結構展開，至少 3 個主要段落 (H2)
-  - 結尾 (1-2 段): 給出有立場的結論和對讀者的具體建議
-  - 參考連結: 文末附上原文和延伸閱讀，格式為 markdown 連結列表
-  - 程式碼片段: 如果主題涉及具體 API 或實作，適當加入程式碼區塊
+  - 程式碼片段是必要的 — 這是核心解析，要有 code
+  - 適當使用 ASCII 圖表解釋資料結構和流程
   - NO mention of RSS, Miniflux, feeds, or aggregation
   - NO "execution mode" or internal tooling references
   - 語氣一致：全文維持 SOUL.md 的資深工程師口吻
+  - 適度使用簡化的虛擬碼（pseudocode）讓複雜概念更易懂
 
 Reference Section (文末):
   ## 延伸閱讀
 
-  - [原文標題](原文 URL) — 本文的起點
   - [參考文章標題](URL) — 一句話說明為什麼值得讀
-  - [參考文章標題](URL) — 一句話說明
+  - [官方文件](URL) — 對應的官方資料
   ...
 
 Output:
@@ -266,16 +269,7 @@ Output:
   - Format: Standard Markdown with Jekyll front matter
 ```
 
-### Phase 6: Mark Read
-
-```yaml
-Steps:
-  1. Mark the selected entry as read in Miniflux:
-     node ~/.claude/skills/miniflux/client.mjs mark-read <entry_id>
-  2. Only mark the one article that was deep-dived, not all unread entries
-```
-
-### Phase 7: Publish to GitHub Pages
+### Phase 4: Publish to GitHub Pages
 
 ```yaml
 GitHub Pages URL base: https://eagle-cool.github.io/dev-digest
@@ -286,11 +280,11 @@ Steps:
   2. Construct page URL:
      https://eagle-cool.github.io/dev-digest/posts/<slug>/
   3. Wait 30 seconds for GitHub Pages to build, then verify once with WebFetch:
-     - If live: proceed to Phase 8
-     - If not live: proceed to Phase 8 anyway
+     - If live: proceed to Phase 5
+     - If not live: proceed to Phase 5 anyway
 ```
 
-### Phase 8: Discord Notification
+### Phase 5: Discord Notification
 
 ```yaml
 Steps:
@@ -326,69 +320,71 @@ Steps:
 title: "<SEO Title>"
 date: YYYY-MM-DD
 description: "<80-120 字摘要，具體提到技術名詞和關鍵洞察>"
-tags: [deep-dive, frontend]
+tags: [deep-dive, react]
 ---
 
-<開場：2-3 段，從原文事件切入。像資深工程師在技術分享會開場——先講結論，再說為什麼你該在乎。不要「今天我們來聊聊」那種廢話開頭。>
+<開場：從一個常見問題或誤解切入。「你有沒有想過為什麼...？」讓讀者好奇。>
 
 ---
 
-## <第一個主要段落標題>
+## <背景/脈絡標題>
 
-<深度分析，至少 300-500 字。帶入技術細節、歷史脈絡、或問題背景。>
+<這個機制的歷史背景和存在意義。300-500 字。>
 
-## <第二個主要段落標題>
+## <核心機制解析標題>
 
-<核心技術解析。如果涉及具體 API 或實作：>
+<深入原始碼級別的分析。配合程式碼：>
 
 ```javascript
-// 具體的程式碼範例（如適用）
-const example = "show, don't just tell";
+// 簡化的框架內部實現
+// 讓讀者看到「原來底層是這樣做的」
 ```
 
-<對程式碼的解釋和分析>
+<對程式碼的逐行解釋和分析>
 
-## <第三個主要段落標題>
+## <實際影響/應用標題>
 
-<延伸討論：影響、比較、或不同觀點。這裡要用到 Phase 4 的研究成果。>
+<理解機制後的實用建議、陷阱、反模式>
 
-## <結論段落標題（可以是「所以呢」「我的看法」等口語標題）>
+```javascript
+// 常見錯誤示範
+// vs 正確寫法
+```
 
-<有立場的結論 + 對讀者的具體建議。不要「讓我們拭目以待」那種廢話結尾。要明確說「你現在該做/不該做什麼」。>
+## <結論標題>
+
+<有立場的總結 + 對讀者的具體建議。明確說「你現在該做/不該做什麼」。>
 
 ---
 
 ## 延伸閱讀
 
-- [原文標題](URL) — 本文的起點
-- [參考文章](URL) — 一句話為什麼值得讀
-- [參考文章](URL) — 一句話
+- [參考文章](URL) — 一句話說明
+- [官方文件](URL) — 對應的官方資料
+- [原始碼連結](URL) — 文中提到的原始碼位置
 ```
 
 ## Constraints & Principles
 
-1. **RSS-First Selection**: 從 Miniflux 選題，不是憑空想題目。
-2. **Frontend Priority**: 選題以前端技術為最高優先，但不排除影響前端的系統/安全議題。
-3. **Research is Mandatory**: 必須做延伸研究（WebSearch + WebFetch），不能只靠原文 + 通用知識。至少 3 次搜尋、2 篇延伸閱讀。
-4. **One Article, Full Depth**: 只選一篇，但要寫出 3000-5000 字的有料分析。寧可深不可淺。
-5. **Facts Over Opinion**: 觀點要有，但必須建立在事實和研究之上。引用要準確，數據不能編。
-6. **Mark Only Selected**: 只標記被深度分析的那一篇為已讀，不動其他 entries。
+1. **Topic-Driven, Not News-Driven**: 從預定主題清單選題，不追新聞。目標是寫出「不會過時」的核心知識。
+2. **Source Code Level**: 盡可能深入到框架原始碼級別。讀者看完要有「原來底層是這樣」的收穫。
+3. **Research is Mandatory**: 必須做深度研究（WebSearch + WebFetch）。至少 5 次搜尋、3 篇深度參考。
+4. **Code is Mandatory**: 核心解析文章一定要有程式碼。簡化的虛擬碼、實際框架原始碼片段、正反示範。
+5. **One Topic, Full Depth**: 一次只解析一個主題，但要寫出 3000-5000 字的有料分析。
+6. **Facts Over Opinion**: 觀點要有，但必須建立在原始碼和文件之上。不能編造 API 或實現細節。
 7. **SEO-Quality Output**: 標題、描述、slug 都要 SEO 友善。
 8. **No Implementation Leaks**: 不提 RSS, Miniflux, feeds, 或任何內部工具。
 9. **deep-dive Tag**: 每篇文章必須包含 `deep-dive` tag 以區分日報。
 10. **SOUL.md Persona**: 全文維持打碼老濕的人設，從開場到結尾。
-11. **Flexible Structure**: 不強制固定結構，根據主題選擇最適合的敘事方式。
-12. **Reference Section**: 文末必須附上原文連結和延伸閱讀資料。
+11. **Progressive Difficulty**: 系列文章按順序從基礎到進階，但每篇都要能獨立閱讀。
+12. **Reference Section**: 文末必須附上延伸閱讀和官方資料連結。
 
 ## Error Handling
 
 | Error | Handling |
 |-------|---------|
-| Miniflux unreachable | Run healthcheck, report error, stop |
-| 0 unread entries | Report "no unread dev content available", stop |
-| No frontend-worthy article | Report "no article suitable for deep dive today", stop |
-| fetch-content empty | Fallback to WebFetch for the article |
-| WebFetch fails | Use content_preview, note limitation |
+| Topic already covered | Show existing post, ask user to pick another topic |
 | WebSearch returns poor results | Try alternative queries, use available info |
+| WebFetch fails for key source | Try alternative sources, note limitation |
 | git push fails | Report error, article still saved locally in _posts/ |
 | Discord send fails | Log error, do not affect article |

@@ -97,16 +97,19 @@ The Agent evaluates entries based on title + content_preview (RSS description). 
 Input: Array of entries from Phase 1 (title, url, feed, content_preview)
 
 Agent Evaluation Criteria:
-  Include (Dev-focused topics):
-    - Frontend: React, Next.js, Vue, Svelte, Web standards, CSS, TypeScript, build tools, DX
-    - Systems: Rust, Go, C/C++, performance engineering, compilers, OS internals
-    - Security: Vulnerability research, exploit techniques, privacy, InfoSec analysis
-    - DevOps: Infrastructure, containers, cloud services, CI/CD, monitoring
-    - Open Source: Major releases, community news, licensing, developer tools
-    - Programming: Language design, algorithms, data structures, software engineering essays
-    - Retro Computing: Hardware hacking, vintage systems, reverse engineering
+  Include (Frontend-focused topics):
+    - React 生態系: React core, Next.js, Remix, React Router, React Query, Zustand, Redux
+    - 前端框架: Vue, Svelte, Angular, Solid.js, Astro（次要但可包含）
+    - Web 標準 & 平台: Web APIs, CSS 新特性, TypeScript, HTML spec, browser updates
+    - 前端工程: Vite, Turbopack, ESBuild, testing (Vitest, Playwright), monorepo, DX
+    - 前端效能: Core Web Vitals, rendering optimization, bundle size, lazy loading
+    - Node.js 後端: NestJS, Express, Fastify, Node.js runtime, Deno, Bun, ORM (Prisma/Drizzle)
+    - 前端 × AI: AI SDK, LLM 在前端的整合, AI-powered dev tools, Copilot/Cursor 相關
+    - 開發者工具: VS Code, Chrome DevTools, npm/pnpm/yarn, ESLint, Prettier
   Exclude:
-    - AI/ML content (covered by AI Digest)
+    - 純後端系統 (Rust, Go, C/C++, kernel, infra) 除非直接影響前端
+    - 純安全研究 (CVE, exploit) 除非影響前端生態或 npm
+    - AI/ML 基礎研究 (model training, datasets) — 只保留 AI 與前端整合的內容
     - Marketing puff / PR without substance
     - Crypto/Blockchain
     - Job postings / hiring announcements
@@ -196,7 +199,7 @@ Slug Generation:
   - The slug is used for both the filename and the Jekyll URL
 
 Tags (only use relevant ones from this set):
-  - frontend, systems, security, devops, opensource, programming, retro
+  - frontend, react, nextjs, typescript, css, nodejs, tooling, ai, web-platform
 
 Output:
   - Directory: _posts/  (write directly to Jekyll posts directory)

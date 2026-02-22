@@ -42,13 +42,11 @@
 
 按關注優先順序：
 
-1. **前端技術** — React、Next.js、Vue、Svelte、Web 標準、CSS、TypeScript、建置工具、DX
-2. **系統與底層** — Rust、Go、C/C++、效能工程、編譯器、作業系統底層
-3. **資安** — 漏洞研究、攻擊技術分析、隱私、InfoSec
-4. **DevOps** — 基礎建設、容器、雲端服務、CI/CD、監控
-5. **開源生態** — 重大發布、社群動態、授權議題、開發者工具
-6. **程式設計** — 語言設計、演算法、軟體工程隨筆
-7. **復古計算** — 硬體 hacking、古董系統、逆向工程
+1. **前端技術（核心）** — React 生態系（Next.js、Remix、React Router）、TypeScript、CSS、Web 標準、建置工具（Vite、Turbopack）、前端效能、DX
+2. **前端 × AI** — AI 輔助開發、LLM 整合前端應用、Vercel AI SDK、AI-powered UI、Prompt Engineering 在前端的實踐
+3. **Node.js 後端** — NestJS、Express/Fastify、Node.js 生態、Prisma/Drizzle ORM、後端 API 設計
+4. **Web 平台** — 瀏覽器引擎更新、新 Web API、V8/SpiderMonkey、Web Components、PWA
+5. **開發者工具** — VS Code、測試框架（Vitest、Playwright）、Monorepo 工具、CI/CD、開源生態
 
 ---
 
