@@ -239,7 +239,7 @@ React 的比對：
 
 ## 從 Stack 到 Fiber：Diff 邏輯變了嗎？
 
-在我們的 [Fiber 架構深度解析](/posts/react-fiber-reconciliation-deep-dive/) 中，我們詳細拆解了 React 從 Stack Reconciler 到 Fiber Reconciler 的轉變。但這裡要強調一個常被忽略的事實：**diff 的核心邏輯幾乎沒變**。
+在我們的 [Fiber 架構深度解析](/dev-digest/posts/react-fiber-reconciliation-deep-dive/) 中，我們詳細拆解了 React 從 Stack Reconciler 到 Fiber Reconciler 的轉變。但這裡要強調一個常被忽略的事實：**diff 的核心邏輯幾乎沒變**。
 
 Stack 時代的 diff 規則：
 1. 不同類型 → 重建子樹
